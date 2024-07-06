@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman</title>
+    <style>
+        body {
+            background: linear-gradient(to right, hsla(0, 2%, 17%, 0.616), rgba(44, 42, 42, 0.726)), url("ml-background.jpg") no-repeat;
+            background-size: cover;
+        }
+
+        .game {
+            width: 300px;
+            text-align: center;
+            margin: auto;
+        }
+
+        .game h2 {
+            margin-top: 50px;
+            color: #fff;
+        }
+
+        .word {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .letters {
+            margin-top: 20px;
+        }
+
+        .letter {
+            display: inline-block;
+            font-size: 18px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+
+        .letter:hover {
+            background-color: darkblue;
+            color: #fff;
+        }
+
+        #restartBtn {
+            background-color: green;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #restartBtn:hover {
+            background-color: darkgreen;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .win-message {
+            font-size: 50px;
+            font-weight: bold;
+            color: green;
+        }
+
+        .lose-message {
+            font-size: 50px;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hangman-game">
+        <div class="game">
+            <h2>MLBB Heroes <br> Guessing Game</h2>
+            <div class="word" id="word"></div>
+            <div class="letters" id="letters"></div>
+            <div class="result" id="result"></div>
+            <button id="restartBtn">Restart Game</button>
+        </div>
+    </section>
+
+    <div id="winModal" class="modal">
+        <div class="modal-content">
+            <center>
+                <h1 class="win-message">𓆩Victory!𓆪</h1>
+            </center>
+        </div>
+    </div>
+
+    <div id="loseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <center>
+                <p class="lose-message">Defeat! <br><br> The word was <span id="lostWord"></span>.</p>
+            </center>
+        </div>
+    </div>
+
+    <script>
+        const words = [
+            "akai", "aldous", "alice", "alpha", "alucard", "angela", "argus", "atlas", "aurora", "badang", "balmond", "barats", "baxia", "beatrix", "belerick", "benedetta", "bane", "brody", "bruno", "chang'e", "cecilion", "chou", "claude", "clint", "diggie", "dyrroth", "esmeralda", "estes", "eudora", "fanny", "faramis", "franco", "freya", "gatotkaca", "gusion", "guinevere", "granger", "grock", "gusion", "hanabi", "hanzo", "harith", "harley", "harith", "helcurt", "hilda", "hylos", "irithel", "jawhead", "johnson", "kadita", "kagura", "karina", "karrie", "khaleed", "kimmy", "kufra", "lapu-lapu", "lancelot", "layla", "leomord", "lesley", "ling", "lolita", "lunox", "luo yi", "lylia", "mathilda", "martis", "masha", "miya", "minsitthar", "moskov", "nana", "natalia", "odette", "paquito", "pharsa", "popol and kupa", "rafaela", "rafaella", "ruby", "roger", "saber", "selena", "silvanna", "sun", "tigreal", "thamuz", "uranus", "vale", "valir", "vexana", "wanwan", "x.borg", "yi sun-shin", "yu zhong", "yve", "zhask", "zilong"
+        ];
+        let selectedWord = words[Math.floor(Math.random() * words.length)];
+        let guessedWord = getGuessedWord(selectedWord);
+        const wordDiv = document.getElementById('word');
+        const lettersDiv = document.getElementById('letters');
+        const resultDiv = document.getElementById('result');
+        let remainingAttempts = 6;
+
+        function displayWord() {
+            wordDiv.textContent = guessedWord.join(' ');
+        }
+
+        function displayLetters() {
+            const symbols = "',-.";
+            const alphabet = 'abcdefghijklmnopqrstuvwxyz' + symbols;
+            const letters = alphabet.split('');
+            letters.forEach(letter => {
+                const letterButton = document.createElement('button');
+                letterButton.textContent = letter;
+                letterButton.classList.add('letter');
+                letterButton.addEventListener('click', () => {
+                    checkLetter(letter);
+                    letterButton.disabled = true;
+                });
+                lettersDiv.appendChild(letterButton);
+            });
+        }
+
+        function checkLetter(letter) {
+            let found = false;
+            for (let i = 0; i < selectedWord.length; i++) {
+                if (selectedWord[i] === letter) {
+                    guessedWord[i] = letter;
+                    found = true;
+                }
+            }
+            displayWord();
+            if (!guessedWord.includes('_')) {
+                openWinModal();
+                disableAllLetters();
+            } else if (!found) {
+                remainingAttempts--;
+                if (remainingAttempts === 0) {
+                    openLoseModal();
+                    disableAllLetters();
+                } else {
+                    resultDiv.textContent = `Incorrect guess. ${remainingAttempts} attempts left.`;
+                }
+            }
+        }
+
+        function getGuessedWord(word) {
+            const symbols = "',-.";
+            return word.split('').map(char => symbols.includes(char) ? char : '_');
+        }
+
+        function disableAllLetters() {
+            const letterButtons = document.querySelectorAll('.letter');
+            letterButtons.forEach(button => {
+                button.disabled = true;
+            });
+        }
+
+        function restartGame() {
+            // Randomize a new word
+            selectedWord = words[Math.floor(Math.random() * words.length)];
+
+            // Reset the guessedWord array
+            guessedWord = getGuessedWord(selectedWord);
+
+            // Reset remaining attempts
+            remainingAttempts = 6;
+
+            // Clear result message
+            resultDiv.textContent = '';
+
+            // Enable all letter buttons
+            const letterButtons = document.querySelectorAll('.letter');
+            letterButtons.forEach(button => {
+                button.disabled = false;
+            });
+
+            // Update the displayed word
+            displayWord();
+        }
+
+        function openWinModal() {
+            const winModal = document.getElementById('winModal');
+            winModal.style.display = 'block';
+            window.onclick = function (event) {
+                if (event.target === winModal) {
+                    winModal.style.display = 'none';
+                }
+            }
+        }
+
+        function openLoseModal() {
+            const loseModal = document.getElementById('loseModal');
+            const lostWordSpan = document.getElementById('lostWord');
+            lostWordSpan.textContent = `"${selectedWord}"`;
+            loseModal.style.display = 'block';
+            window.onclick = function (event) {
+                if (event.target === loseModal) {
+                    loseModal.style.display = 'none';
+                }
+            }
+        }
+
+        displayWord();
+        displayLetters();
+
+        const restartBtn = document.getElementById('restartBtn');
+        restartBtn.addEventListener('click', restartGame);
+    </script>
+</body>
+
+</html>
