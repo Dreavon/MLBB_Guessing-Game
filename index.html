@@ -9,6 +9,7 @@
         body {
             background: linear-gradient(to right, hsla(0, 2%, 17%, 0.616), rgba(44, 42, 42, 0.726)), url("ml-background.jpg") no-repeat;
             background-size: cover;
+            height: 100vh;
         }
 
         .game {
@@ -30,6 +31,7 @@
 
         .result {
             color: #fff;
+            margin-top: 15px;
         }
 
         .letters {
@@ -96,6 +98,50 @@
             font-weight: bold;
             color: red;
         }
+
+        /*  */
+
+        @media (min-width: 1440px) {
+            body {
+                background: auto;
+                background-position: center;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            body {
+                background: auto;
+                background-position: center;
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                background: auto;
+                background-position: center;
+            }
+        }
+
+        @media (min-width: 425px) {
+            body {
+                background: auto;
+                background-position: center;
+            }
+        }
+
+        @media (min-width: 375px) {
+            body {
+                background: auto;
+                background-position: center;
+            }
+        }
+
+        @media (min-width: 320px) {
+            body {
+                background: auto;
+                background-position: center;
+            }
+        }
     </style>
 </head>
 
@@ -129,120 +175,113 @@
 
     <script>
         const words = [
-            "akai", "aldous", "alice", "alpha", "alucard", "angela", "argus", "atlas", "aurora", "badang", "balmond", "barats", "baxia", "beatrix", "belerick", "benedetta", "bane", "brody", "bruno", "chang'e", "cecilion", "chou", "claude", "clint", "diggie", "dyrroth", "esmeralda", "estes", "eudora", "fanny", "faramis", "franco", "freya", "gatotkaca", "gusion", "guinevere", "granger", "grock", "gusion", "hanabi", "hanzo", "harith", "harley", "harith", "helcurt", "hilda", "hylos", "irithel", "jawhead", "johnson", "kadita", "kagura", "karina", "karrie", "khaleed", "kimmy", "kufra", "lapu-lapu", "lancelot", "layla", "leomord", "lesley", "ling", "lolita", "lunox", "luo yi", "lylia", "mathilda", "martis", "masha", "miya", "minsitthar", "moskov", "nana", "natalia", "odette", "paquito", "pharsa", "popol and kupa", "rafaela", "rafaella", "ruby", "roger", "saber", "selena", "silvanna", "sun", "tigreal", "thamuz", "uranus", "vale", "valir", "vexana", "wanwan", "x.borg", "yi sun-shin", "yu zhong", "yve", "zhask", "zilong"
-        ];
-        let selectedWord = words[Math.floor(Math.random() * words.length)];
-        let guessedWord = getGuessedWord(selectedWord);
-        const wordDiv = document.getElementById('word');
-        const lettersDiv = document.getElementById('letters');
-        const resultDiv = document.getElementById('result');
-        let remainingAttempts = 6;
+    "akai", "aldous", "alice", "alpha", "alucard", "angela", "argus", "atlas", "aurora", "badang", "balmond", "barats", "baxia", "beatrix", "belerick", "benedetta", "bane", "brody", "bruno", "chang'e", "cecilion", "chou", "claude", "clint", "diggie", "dyrroth", "esmeralda", "estes", "eudora", "fanny", "faramis", "franco", "freya", "gatotkaca", "gusion", "guinevere", "granger", "grock", "gusion", "hanabi", "hanzo", "harith", "harley", "harith", "helcurt", "hilda", "hylos", "irithel", "jawhead", "johnson", "kadita", "kagura", "karina", "karrie", "khaleed", "kimmy", "kufra", "lapu-lapu", "lancelot", "layla", "leomord", "lesley", "ling", "lolita", "lunox", "luo yi", "lylia", "mathilda", "martis", "masha", "miya", "minsitthar", "moskov", "nana", "natalia", "odette", "paquito", "pharsa", "popol and kupa", "rafaela", "rafaela", "ruby", "roger", "saber", "selena", "silvanna", "sun", "tigreal", "thamuz", "uranus", "vale", "valir", "vexana", "wanwan", "x.borg", "yi sun-shin", "yu zhong", "yve", "zhask", "zilong"
+];
+let selectedWord = words[Math.floor(Math.random() * words.length)];
+let guessedWord = getGuessedWord(selectedWord);
+const wordDiv = document.getElementById('word');
+const lettersDiv = document.getElementById('letters');
+const resultDiv = document.getElementById('result');
+let remainingAttempts = 6;
 
-        function displayWord() {
-            wordDiv.textContent = guessedWord.join(' ');
+function displayWord() {
+    wordDiv.textContent = guessedWord.join(' ');
+}
+
+function displayLetters() {
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+    const letters = alphabet.split('');
+    letters.forEach(letter => {
+        const letterButton = document.createElement('button');
+        letterButton.textContent = letter;
+        letterButton.classList.add('letter');
+        letterButton.addEventListener('click', () => {
+            checkLetter(letter);
+            letterButton.disabled = true;
+        });
+        lettersDiv.appendChild(letterButton);
+    });
+}
+
+function checkLetter(letter) {
+    let found = false;
+    for (let i = 0; i < selectedWord.length; i++) {
+        if (selectedWord[i] === letter) {
+            guessedWord[i] = letter;
+            found = true;
         }
-
-        function displayLetters() {
-            const symbols = "',-.";
-            const alphabet = 'abcdefghijklmnopqrstuvwxyz' + symbols;
-            const letters = alphabet.split('');
-            letters.forEach(letter => {
-                const letterButton = document.createElement('button');
-                letterButton.textContent = letter;
-                letterButton.classList.add('letter');
-                letterButton.addEventListener('click', () => {
-                    checkLetter(letter);
-                    letterButton.disabled = true;
-                });
-                lettersDiv.appendChild(letterButton);
-            });
+    }
+    displayWord();
+    if (!guessedWord.includes('_')) {
+        openWinModal();
+        disableAllLetters();
+        restartBtn.disabled = false;
+    } else if (!found) {
+        remainingAttempts--;
+        if (remainingAttempts === 0) {
+            openLoseModal();
+            disableAllLetters();
+            restartBtn.disabled = false;
+        } else {
+            resultDiv.textContent = `Incorrect guess. ${remainingAttempts} attempts left.`;
         }
+    }
+}
 
-        function checkLetter(letter) {
-            let found = false;
-            for (let i = 0; i < selectedWord.length; i++) {
-                if (selectedWord[i] === letter) {
-                    guessedWord[i] = letter;
-                    found = true;
-                }
-            }
-            displayWord();
-            if (!guessedWord.includes('_')) {
-                openWinModal();
-                disableAllLetters();
-            } else if (!found) {
-                remainingAttempts--;
-                if (remainingAttempts === 0) {
-                    openLoseModal();
-                    disableAllLetters();
-                } else {
-                    resultDiv.textContent = `Incorrect guess. ${remainingAttempts} attempts left.`;
-                }
-            }
-        }
+function getGuessedWord(word) {
+    const symbols = "',-.";
+    return word.split('').map(char => symbols.includes(char) ? char : (char === ' ' ? ' ' : '_'));
+}
 
-        function getGuessedWord(word) {
-            const symbols = "',-.";
-            return word.split('').map(char => symbols.includes(char) ? char : '_');
-        }
+function disableAllLetters() {
+    const letterButtons = document.querySelectorAll('.letter');
+    letterButtons.forEach(button => {
+        button.disabled = true;
+    });
+}
 
-        function disableAllLetters() {
-            const letterButtons = document.querySelectorAll('.letter');
-            letterButtons.forEach(button => {
-                button.disabled = true;
-            });
-        }
-
-        function restartGame() {
-            // Randomize a new word
+function restartGame() {
             selectedWord = words[Math.floor(Math.random() * words.length)];
-
-            // Reset the guessedWord array
             guessedWord = getGuessedWord(selectedWord);
-
-            // Reset remaining attempts
             remainingAttempts = 6;
-
-            // Clear result message
             resultDiv.textContent = '';
-
-            // Enable all letter buttons
             const letterButtons = document.querySelectorAll('.letter');
             letterButtons.forEach(button => {
                 button.disabled = false;
             });
 
-            // Update the displayed word
             displayWord();
         }
 
-        function openWinModal() {
-            const winModal = document.getElementById('winModal');
-            winModal.style.display = 'block';
-            window.onclick = function (event) {
-                if (event.target === winModal) {
-                    winModal.style.display = 'none';
-                }
-            }
+function openWinModal() {
+    const winModal = document.getElementById('winModal');
+    winModal.style.display = 'block';
+    window.onclick = function (event) {
+        if (event.target === winModal) {
+            winModal.style.display = 'none';
         }
+    }
+}
 
-        function openLoseModal() {
-            const loseModal = document.getElementById('loseModal');
-            const lostWordSpan = document.getElementById('lostWord');
-            lostWordSpan.textContent = `"${selectedWord}"`;
-            loseModal.style.display = 'block';
-            window.onclick = function (event) {
-                if (event.target === loseModal) {
-                    loseModal.style.display = 'none';
-                }
-            }
+function openLoseModal() {
+    const loseModal = document.getElementById('loseModal');
+    const lostWordSpan = document.getElementById('lostWord');
+    lostWordSpan.textContent = `"${selectedWord}"`;
+    loseModal.style.display = 'block';
+    window.onclick = function (event) {
+        if (event.target === loseModal) {
+            loseModal.style.display = 'none';
         }
+    }
+}
 
-        displayWord();
-        displayLetters();
+displayWord();
+displayLetters();
 
-        const restartBtn = document.getElementById('restartBtn');
-        restartBtn.addEventListener('click', restartGame);
+const restartBtn = document.getElementById('restartBtn');
+restartBtn.disabled = true;
+restartBtn.addEventListener('click', restartGame);
+
     </script>
 </body>
 
